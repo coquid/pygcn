@@ -9,9 +9,10 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_my_data, accuracy 
+from pygcn.utils import load_my_data, my_accuracy
 
-from pygcn.models import GCN , MyGCN
+from pygcn.models import GCN, MyGCN
+
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -45,10 +46,10 @@ if args.cuda:
 # adj, features, labels, idx_train, idx_val, idx_test = load_data()
 adj, features, out_feature, idx_train, idx_val, idx_test = load_my_data()
 # Model and optimizer
-model = MyGCN(nfeat=features.shape[1],
-            nhid=args.hidden,
-            nout=out_feature.shape[1],
-            dropout=args.dropout)
+model = MyGCN(nfeat=features.shape[2],
+              nhid=args.hidden,
+              nout=out_feature.shape[2],
+              dropout=args.dropout)
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
 
@@ -66,13 +67,25 @@ def train(epoch):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    for batch_ind in range(args.batch_size):
-        batch = torch.Tensor(features[0:(batch_ind+1)*args.batch_size])
-        output = model(batch, adj)
-        loss_train = F.nll_loss(output[idx_train], out_feature[idx_train])
-        acc_train = accuracy(output[idx_train], out_feature[idx_train])
-        loss_train.backward()
-        optimizer.step()
+    if args.cuda:
+        for batch_ind in range(args.batch_size):
+            batch = features
+            output = model(batch, adj)
+            loss_train = F.mse_loss(output, out_feature)
+            # loss_train = F.l1_loss(output, out_feature)
+            # loss_train = F.smooth_l1_loss(output, out_feature)
+            # loss_train = F.l1_loss(output, out_feature)
+            acc_train = my_accuracy(output, out_feature)
+            loss_train.backward()
+            optimizer.step()
+    else:
+        for batch_ind in range(args.batch_size):
+            batch = torch.Tensor(features[batch_ind])
+            output = model(batch, adj)
+            loss_train = F.nll_loss(output[idx_train], out_feature[idx_train])
+            acc_train = my_accuracy(output[idx_train], out_feature[idx_train])
+            loss_train.backward()
+            optimizer.step()
 
     if not args.fastmode:
         # Evaluate validation set performance separately,
@@ -81,7 +94,7 @@ def train(epoch):
         output = model(features, adj)
 
     loss_val = F.nll_loss(output[idx_val], out_feature[idx_val])
-    acc_val = accuracy(output[idx_val], out_feature[idx_val])
+    acc_val = my_accuracy(output[idx_val], out_feature[idx_val])
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(loss_train.item()),
           'acc_train: {:.4f}'.format(acc_train.item()),
@@ -94,7 +107,7 @@ def test():
     model.eval()
     output = model(features, adj)
     loss_test = F.nll_loss(output[idx_test], out_feature[idx_test])
-    acc_test = accuracy(output[idx_test], out_feature[idx_test])
+    acc_test = my_accuracy(output[idx_test], out_feature[idx_test])
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
           "accuracy= {:.4f}".format(acc_test.item()))
