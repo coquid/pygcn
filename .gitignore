@@ -1,2 +1,15 @@
 
 *.pyc
+.vscode/settings.json
+build/lib/pygcn/__init__.py
+build/lib/pygcn/layers.py
+build/lib/pygcn/models.py
+build/lib/pygcn/train.py
+build/lib/pygcn/utils.py
+dist/pygcn-0.1-py3.5.egg
+pygcn.egg-info/PKG-INFO
+pygcn.egg-info/SOURCES.txt
+pygcn.egg-info/dependency_links.txt
+pygcn.egg-info/requires.txt
+pygcn.egg-info/top_level.txt
+.DS_Store

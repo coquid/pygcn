@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 import torch
-
+import networkx as nx
 
 def encode_onehot(labels):
     classes = set(labels)
@@ -52,6 +52,60 @@ def load_data(path="../data/cora/", dataset="cora"):
 
     return adj, features, labels, idx_train, idx_val, idx_test
 
+def load_my_data(path="../data/luis/", dataset="hanging"):
+    """Load cloth simulation dataset"""
+    print('Loading {} dataset...'.format(dataset))
+
+    adj_list_file = path+dataset+".adj_list"
+    input_file = path+dataset+".input"
+    output_file = path+dataset+".output"
+    info_file = path+dataset+".luis_info"
+
+    # adj Matrix
+    graph = {}
+    with open(adj_list_file) as f:
+        for line in f:
+            if(line.isspace()==False):
+                key , temp_val = line.strip().split(":")
+                val = temp_val.strip().split(" ")
+                graph[int(key)] = list(map(int,val))
+
+    csr_adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
+    adj = sp.coo_matrix(csr_adj)
+
+    # build symmetric adjacency matrix
+    adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+    adj = normalize(adj + sp.eye(adj.shape[0]))
+    
+    input_arr = np.loadtxt(input_file,skiprows=1,delimiter=",")
+    # input_arr = np.reshape(input_arr,(input_arr.shape[0],adj.shape[0],10))  # 총 10개 피쳐
+    # in_features = np.zeros((input_arr.shape[0]),dtype=np.matrix)
+    # for i in range(input_arr.shape[0]):
+    #     in_features[i] = np.asmatrix(input_arr[i])
+    in_features = np.reshape(input_arr,(input_arr.shape[0],adj.shape[0],10))  # 총 10개 피쳐
+    
+    output_arr = np.loadtxt(output_file,skiprows=1,delimiter=",")
+    # output_arr = np.reshape(output_arr,(output_arr.shape[0],adj.shape[0],3))    # 총 3개 피쳐
+    # out_feature = np.zeros((output_arr.shape[0]),dtype=np.matrix)
+    # for i in range(output_arr.shape[0]):
+    #     out_feature[i] = np.asmatrix(output_arr[i])
+    out_feature = np.reshape(output_arr,(output_arr.shape[0],adj.shape[0],3))    # 총 3개 피쳐
+    
+
+    in_features = torch.Tensor((in_features))
+    out_feature = torch.Tensor((out_feature))
+    adj = sparse_mx_to_torch_sparse_tensor(adj)
+
+    idx_train = range(25)
+    idx_val = range(25)
+    idx_test = range(25, 30)
+    
+    idx_train = torch.LongTensor(idx_train)
+    idx_val = torch.LongTensor(idx_val)
+    idx_test = torch.LongTensor(idx_test)
+
+    return adj, in_features, out_feature, idx_train, idx_val, idx_test
+
 
 def normalize(mx):
     """Row-normalize sparse matrix"""
@@ -78,3 +132,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     values = torch.from_numpy(sparse_mx.data)
     shape = torch.Size(sparse_mx.shape)
     return torch.sparse.FloatTensor(indices, values, shape)
+
+if __name__ == "__main__":
+    adj, features, labels, idx_train, idx_val, idx_test = load_my_data()
+# adj, features, labels, idx_train, idx_val, idx_test = load_data()
