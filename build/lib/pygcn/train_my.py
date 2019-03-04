@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_my_data, accuracy
+from pygcn.utils import load_my_data, my_accuracy
 
 from pygcn.models import GCN, MyGCN
 
@@ -68,14 +68,14 @@ def train(epoch):
     model.train()
     optimizer.zero_grad()
     if args.cuda:
-        for batch_ind in range(args.batch_size):
+        for batch_ind in range(1):
             batch = features
             output = model(batch, adj)
             loss_train = F.mse_loss(output, out_feature)
             # loss_train = F.l1_loss(output, out_feature)
             # loss_train = F.smooth_l1_loss(output, out_feature)
             # loss_train = F.l1_loss(output, out_feature)
-            acc_train = accuracy(output, out_feature)
+            acc_train = my_accuracy(output, out_feature)
             loss_train.backward()
             optimizer.step()
     else:
@@ -83,7 +83,7 @@ def train(epoch):
             batch = torch.Tensor(features[batch_ind])
             output = model(batch, adj)
             loss_train = F.nll_loss(output[idx_train], out_feature[idx_train])
-            acc_train = accuracy(output[idx_train], out_feature[idx_train])
+            acc_train = my_accuracy(output[idx_train], out_feature[idx_train])
             loss_train.backward()
             optimizer.step()
 
@@ -93,8 +93,8 @@ def train(epoch):
         model.eval()
         output = model(features, adj)
 
-    loss_val = F.nll_loss(output[idx_val], out_feature[idx_val])
-    acc_val = accuracy(output[idx_val], out_feature[idx_val])
+    loss_val = F.mse_loss(output, out_feature)
+    acc_val = my_accuracy(output, out_feature)
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(loss_train.item()),
           'acc_train: {:.4f}'.format(acc_train.item()),
@@ -107,7 +107,7 @@ def test():
     model.eval()
     output = model(features, adj)
     loss_test = F.nll_loss(output[idx_test], out_feature[idx_test])
-    acc_test = accuracy(output[idx_test], out_feature[idx_test])
+    acc_test = my_accuracy(output[idx_test], out_feature[idx_test])
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
           "accuracy= {:.4f}".format(acc_test.item()))

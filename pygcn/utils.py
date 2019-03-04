@@ -130,9 +130,8 @@ def accuracy(output, labels):
 def my_accuracy(output, ground_truth):
     preds = torch.abs(output-ground_truth)
     preds = torch.div(preds, ground_truth)
-    preds = torch.mul(preds, 100)
     correct = preds.sum()
-    return correct / len(ground_truth)
+    return correct / (ground_truth.shape[0]*ground_truth.shape[1]) * 100
 
 
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):

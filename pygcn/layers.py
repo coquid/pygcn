@@ -65,18 +65,8 @@ class MyGraphConvolution(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
-        print("input shape = {} , weight shaep = {}".format(
-            input.shape, self.weight.shape))
         support = torch.matmul(input, self.weight)
-        print("support shape = {}".format(
-            support.shape))
         output = torch.stack([torch.spmm(adj, sup) for sup in support])
-        print("output shape = {}".format(
-            output.shape))
-        # support = input.mm(self.weight)
-        # output = adj.spmm(support)
-        # support = torch.bmm(input, self.weight)
-        # output = torch.spmm(adj, support)
 
         if self.bias is not None:
             return output + self.bias
