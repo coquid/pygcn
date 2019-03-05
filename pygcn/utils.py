@@ -71,7 +71,6 @@ def load_my_data(path="../data/luis/", dataset="hanging"):
                 key, temp_val = line.strip().split(":")
                 val = temp_val.strip().split(" ")
                 graph[int(key)] = list(map(int, val))
-
     csr_adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
     adj = sp.coo_matrix(csr_adj)
 

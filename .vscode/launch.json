@@ -10,7 +10,12 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "preLaunchTask": "build library",
+            "osx": {
+
+            },
+            "windows": {
+                "preLaunchTask": "build library",
+            },
             "cwd": "${fileDirname}",
             //"debugStdLib": true
         },

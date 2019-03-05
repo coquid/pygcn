@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_my_data, my_accuracy
+from pygcn.utils import load_my_data
 
 from pygcn.models import GCN, MyGCN
 
@@ -31,7 +31,7 @@ parser.add_argument('--hidden', type=int, default=10,
                     help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
-parser.add_argument('--batch_size', type=int, default=30,
+parser.add_argument('--batch_size', type=int, default=32,
                     help='Batch size')
 
 args = parser.parse_args()
@@ -67,26 +67,26 @@ def train(epoch):
     t = time.time()
     model.train()
     optimizer.zero_grad()
-    if args.cuda:
-        for batch_ind in range(1):
-            batch = features
-            output = model(batch, adj)
-            loss_train = F.mse_loss(output, out_feature)
-            # loss_train = F.l1_loss(output, out_feature)
-            # loss_train = F.smooth_l1_loss(output, out_feature)
-            # loss_train = F.l1_loss(output, out_feature)
-            # acc_train = my_accuracy(output, out_feature)
-            loss_train.backward()
-            optimizer.step()
-    else:
-        for batch_ind in range(args.batch_size):
-            batch = torch.Tensor(features[batch_ind])
-            output = model(batch, adj)
-            loss_train = F.nll_loss(output[idx_train], out_feature[idx_train])
-            # acc_train = my_accuracy(output[idx_train], out_feature[idx_train])
-            loss_train.backward()
-            optimizer.step()
+    num_data = features.shape[0]
+    num_batch = int(num_data/args.batch_size)+1
 
+    for batch_ind in range(num_batch):
+        prev_batch_ind = batch_ind*args.batch_size
+        curr_batch_ind = (batch_ind+1)*args.batch_size
+
+        if(batch_ind == num_batch-1):
+            batch = features[prev_batch_ind:]
+        else:
+            batch = features[prev_batch_ind:curr_batch_ind]
+        
+        output = model(batch, adj)
+        loss_train = F.mse_loss(output, out_feature)
+        # loss_train = F.l1_loss(output, out_feature)
+        # loss_train = F.smooth_l1_loss(output, out_feature)
+        # loss_train = F.l1_loss(output, out_feature)
+        loss_train.backward()
+        optimizer.step()
+    
     if not args.fastmode:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
@@ -94,7 +94,6 @@ def train(epoch):
         output = model(features, adj)
 
     loss_val = F.mse_loss(output, out_feature)
-    # acc_val = my_accuracy(output, out_feature)
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(loss_train.item()),
           # 'acc_train: {:.4f}'.format(acc_train.item()),
@@ -107,10 +106,8 @@ def test():
     model.eval()
     output = model(features, adj)
     loss_test = F.nll_loss(output[idx_test], out_feature[idx_test])
-    acc_test = my_accuracy(output[idx_test], out_feature[idx_test])
     print("Test set results:",
-          "loss= {:.4f}".format(loss_test.item()),
-          "accuracy= {:.4f}".format(acc_test.item()))
+          "loss= {:.4f}".format(loss_test.item()))
 
 
 # Train model

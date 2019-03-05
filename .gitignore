@@ -13,3 +13,4 @@ pygcn.egg-info/dependency_links.txt
 pygcn.egg-info/requires.txt
 pygcn.egg-info/top_level.txt
 .DS_Store
+dist/pygcn-0.1-py3.7.egg
