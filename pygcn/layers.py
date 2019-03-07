@@ -66,6 +66,7 @@ class MyGraphConvolution(Module):
 
     def forward(self, input, adj):
         support = torch.matmul(input, self.weight)
+        # output = torch.spmm(adj, support)
         output = torch.stack([torch.spmm(adj, sup) for sup in support])
 
         if self.bias is not None:

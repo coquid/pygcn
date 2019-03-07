@@ -54,14 +54,21 @@ def load_data(path="../data/cora/", dataset="cora"):
     return adj, features, labels, idx_train, idx_val, idx_test
 
 
-def load_my_data(path="../data/luis/", dataset="hanging"):
+def load_my_data(path="../data/luis/big/", dataset="hanging"):
     """Load cloth simulation dataset"""
     print('Loading {} dataset...'.format(dataset))
 
-    adj_list_file = path+dataset+".adj_list"
+    adj_list_file = path+"hanging.adj_list"
+    info_file = path+"hanging.luis_info"
+
     input_file = path+dataset+".input"
     output_file = path+dataset+".output"
-    # info_file = path+dataset+".luis_info"
+    input_npy = path+"npy/"+dataset+".input.npy"
+    output_npy = path+"npy/"+dataset+".output.npy"
+
+    with open(info_file) as f:
+        num_vert = int(f.readline().strip())
+        num_feature = int(f.readline().strip())
 
     # adj Matrix
     graph = {}
@@ -78,21 +85,21 @@ def load_my_data(path="../data/luis/", dataset="hanging"):
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
     adj = normalize(adj + sp.eye(adj.shape[0]))
 
-    input_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
-    # input_arr = np.reshape(input_arr,(input_arr.shape[0],adj.shape[0],10))  # 총 10개 피쳐
-    # in_features = np.zeros((input_arr.shape[0]),dtype=np.matrix)
-    # for i in range(input_arr.shape[0]):
-    #     in_features[i] = np.asmatrix(input_arr[i])
-    in_features = np.reshape(
-        input_arr, (input_arr.shape[0], adj.shape[0], 10))  # 총 10개 피쳐
+    try:
+        in_features = np.load(input_npy)
+    except IOError:
+        input_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
+        in_features = np.reshape(
+            input_arr, (input_arr.shape[0], adj.shape[0], num_feature))  # 총 10개 피쳐
+        np.save(input_npy, in_features)
 
-    output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
-    # output_arr = np.reshape(output_arr,(output_arr.shape[0],adj.shape[0],3))    # 총 3개 피쳐
-    # out_feature = np.zeros((output_arr.shape[0]),dtype=np.matrix)
-    # for i in range(output_arr.shape[0]):
-    #     out_feature[i] = np.asmatrix(output_arr[i])
-    out_feature = np.reshape(
-        output_arr, (output_arr.shape[0], adj.shape[0], 3))    # 총 3개 피쳐
+    try:
+        out_feature = np.load(output_npy)
+    except IOError:
+        output_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
+        out_feature = np.reshape(
+            output_arr, (output_arr.shape[0], adj.shape[0], num_feature))  # 총 10개 피쳐
+        np.save(output_npy, out_feature)
 
     in_features = torch.Tensor((in_features))
     out_feature = torch.Tensor((out_feature))
@@ -107,6 +114,38 @@ def load_my_data(path="../data/luis/", dataset="hanging"):
     idx_test = torch.LongTensor(idx_test)
 
     return adj, in_features, out_feature, idx_train, idx_val, idx_test
+
+
+def load_save_data(path="../data/luis/big/", dataset="hanging"):
+    """Load cloth simulation dataset"""
+    print('Loading {} dataset...'.format(dataset))
+
+    info_file = path+"hanging.luis_info"
+
+    input_file = path+dataset+".input"
+    output_file = path+dataset+".output"
+    input_npy = path+"npy/"+dataset+".input.npy"
+    output_npy = path+"npy/"+dataset+".output.npy"
+
+    with open(info_file) as f:
+        num_vert = int(f.readline().strip())
+        num_feature = int(f.readline().strip())
+
+    try:
+        in_features = np.load(input_npy)
+    except IOError:
+        input_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
+        in_features = np.reshape(
+            input_arr, (input_arr.shape[0], num_vert, num_feature))  # 총 10개 피쳐
+        np.save(input_npy, in_features)
+
+    try:
+        out_feature = np.load(output_npy)
+    except IOError:
+        output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
+        out_feature = np.reshape(
+            output_arr, (output_arr.shape[0], num_vert, 3))  # 총 3개 피쳐
+        np.save(output_npy, out_feature)
 
 
 def normalize(mx):
@@ -144,5 +183,8 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 
 if __name__ == "__main__":
-    adj, features, labels, idx_train, idx_val, idx_test = load_my_data()
+    load_save_data(dataset="hanging_lamp")
+    load_save_data(dataset="drop_bunny_box")
+    load_save_data(dataset="hanging_bunny_box1")
+
 # adj, features, labels, idx_train, idx_val, idx_test = load_data()
