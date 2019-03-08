@@ -9,9 +9,10 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_data, load_my_data, accuracy
+from pygcn.utils import load_my_data
 
-from pygcn.models import GCN
+from pygcn.models import GCN, MyGCN
+
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -26,10 +27,12 @@ parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--hidden', type=int, default=16,
+parser.add_argument('--hidden', type=int, default=10,
                     help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
+parser.add_argument('--batch_size', type=int, default=1,
+                    help='Batch size')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -41,12 +44,17 @@ if args.cuda:
 
 # Load data
 # adj, features, labels, idx_train, idx_val, idx_test = load_data()
-adj, features, labels, idx_train, idx_val, idx_test = load_data()
+adj, features, out_feature, idx_train, idx_val, idx_test = load_my_data(
+    dataset="hanging_lamp")
+# adj, features, out_feature, idx_train, idx_val, idx_test = load_my_data(
+#     dataset="hanging_bunny_box1")
+# adj, features, out_feature, idx_train, idx_val, idx_test = load_my_data(
+#     dataset="drop_bunny_box")
 # Model and optimizer
-model = GCN(nfeat=features.shape[1],
-            nhid=args.hidden,
-            nclass=labels.max().item() + 1,
-            dropout=args.dropout)
+model = MyGCN(nfeat=features.shape[2],
+              nhid=args.hidden,
+              nout=out_feature.shape[2],
+              dropout=args.dropout)
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
 
@@ -54,7 +62,7 @@ if args.cuda:
     model.cuda()
     features = features.cuda()
     adj = adj.cuda()
-    labels = labels.cuda()
+    out_feature = out_feature.cuda()
     idx_train = idx_train.cuda()
     idx_val = idx_val.cuda()
     idx_test = idx_test.cuda()
@@ -62,13 +70,55 @@ if args.cuda:
 
 def train(epoch):
     t = time.time()
+    torch.cuda.synchronize()
+    model.eval()
+    output = model(features, adj)
+    prev_loss = F.mse_loss(output, out_feature)
+
     model.train()
     optimizer.zero_grad()
-    output = model(features, adj)
-    loss_train = F.nll_loss(output[idx_train], labels[idx_train])
-    acc_train = accuracy(output[idx_train], labels[idx_train])
-    loss_train.backward()
-    optimizer.step()
+    num_data = features.shape[0]
+
+    for ind in range(num_data):
+        prev_batch_ind = ind
+        curr_batch_ind = ind+1
+
+        if(ind == 0):
+            batch = features[:curr_batch_ind]
+            batch_out = out_feature[:curr_batch_ind]
+        else:
+            batch = features[prev_batch_ind:curr_batch_ind]
+            batch_out = out_feature[prev_batch_ind:curr_batch_ind]
+
+        output = model(batch, adj)
+        loss_train = F.mse_loss(output, batch_out)
+        # loss_train = F.l1_loss(output, out_feature)
+        # loss_train = F.smooth_l1_loss(output, out_feature)
+        # loss_train = F.l1_loss(output, out_feature)
+        loss_train.backward()
+        optimizer.step()
+
+    # num_data = features.shape[0]
+    # num_batch = int(num_data/args.batch_size)+1
+
+    # for batch_ind in range(num_batch):
+    #     prev_batch_ind = batch_ind*args.batch_size
+    #     curr_batch_ind = (batch_ind+1)*args.batch_size
+
+    #     if(batch_ind == num_batch-1):
+    #         batch = features[prev_batch_ind:]
+    #         batch_out = out_feature[prev_batch_ind:]
+    #     else:
+    #         batch = features[prev_batch_ind:curr_batch_ind]
+    #         batch_out = out_feature[prev_batch_ind:curr_batch_ind]
+
+    #     output = model(batch, adj)
+    #     loss_train = F.mse_loss(output, batch_out)
+    #     # loss_train = F.l1_loss(output, out_feature)
+    #     # loss_train = F.smooth_l1_loss(output, out_feature)
+    #     # loss_train = F.l1_loss(output, out_feature)
+    #     loss_train.backward()
+    #     optimizer.step()
 
     if not args.fastmode:
         # Evaluate validation set performance separately,
@@ -76,24 +126,21 @@ def train(epoch):
         model.eval()
         output = model(features, adj)
 
-    loss_val = F.nll_loss(output[idx_val], labels[idx_val])
-    acc_val = accuracy(output[idx_val], labels[idx_val])
+    loss_val = F.mse_loss(output, out_feature)
     print('Epoch: {:04d}'.format(epoch+1),
-          'loss_train: {:.4f}'.format(loss_train.item()),
-          'acc_train: {:.4f}'.format(acc_train.item()),
-          'loss_val: {:.4f}'.format(loss_val.item()),
-          'acc_val: {:.4f}'.format(acc_val.item()),
+          'loss_prev: {:.6f}'.format(prev_loss.item()),
+          # 'acc_train: {:.4f}'.format(acc_train.item()),
+          'loss_curr: {:.6f}'.format(loss_val.item()),
+          # 'acc_val: {:.4f}'.format(acc_val.item()),
           'time: {:.4f}s'.format(time.time() - t))
 
 
 def test():
     model.eval()
     output = model(features, adj)
-    loss_test = F.nll_loss(output[idx_test], labels[idx_test])
-    acc_test = accuracy(output[idx_test], labels[idx_test])
+    loss_test = F.nll_loss(output[idx_test], out_feature[idx_test])
     print("Test set results:",
-          "loss= {:.4f}".format(loss_test.item()),
-          "accuracy= {:.4f}".format(acc_test.item()))
+          "loss= {:.4f}".format(loss_test.item()))
 
 
 # Train model
