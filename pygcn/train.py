@@ -35,6 +35,8 @@ parser.add_argument('--batch_size', type=int, default=1,
                     help='Batch size')
 parser.add_argument('--cost_func', type=str, default="mse_loss",
                     help='cost_func : mse_loss,l1_loss , smooth_l1_loss , ')
+parser.add_argument('--trial', type=int, default=1,
+                    help='trial')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -116,10 +118,8 @@ def train(epoch):
           'time: {:.4f}s'.format(time.time() - t))
 
 
-def save_tensor():
-    path = "../result/model/" + \
-        "batch_size_{}_lr_{}_dropout_{}".format(
-            args.batch_size, args.lr, args.dropout)
+def save_tensor(trial = 1):
+    path = "../result/model/" + "trial_{}".format(trial)
     torch.save(model.state_dict(), path+".pt")
     torch.save(optimizer.state_dict(), path+".opt")
     arg_dict = {
@@ -156,12 +156,12 @@ def print_model_info():
     # Train model
 t_total = time.time()
 print_model_info()
-save_tensor()
+save_tensor(trial= args.trial)
 for epoch in range(args.epochs):
     train(epoch)
 print("Optimization Finished!")
 print("Total time elapsed: {:.4f}s".format(time.time() - t_total))
 
 # Testing
-save_tensor()
+save_tensor(trial= args.trial)
 test()

@@ -79,7 +79,7 @@ def test():
     print("dropout          : {}".format(_dropout))
     print("batch_size       : {}".format(_batch_size))
     print("cost_func        : {}".format(_cost_func))
-    print("Test set results:",
+    print("Test set results :",
           "loss= {:.4f}".format(loss_test.item()))
 
 
