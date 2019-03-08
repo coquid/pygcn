@@ -54,21 +54,13 @@ def load_data(path="../data/cora/", dataset="cora"):
     return adj, features, labels, idx_train, idx_val, idx_test
 
 
-def load_my_data(path="../data/luis/big/", dataset="hanging"):
+def load_my_data(path="../data/luis/big/", dataset="hanging", num_test=10):
     """Load cloth simulation dataset"""
     print('Loading {} dataset...'.format(dataset))
 
-    adj_list_file = path+"hanging.adj_list"
-    info_file = path+"hanging.luis_info"
-
-    input_file = path+dataset+".input"
-    output_file = path+dataset+".output"
-    input_npy = path+"npy/"+dataset+".input.npy"
-    output_npy = path+"npy/"+dataset+".output.npy"
-
-    with open(info_file) as f:
-        num_vert = int(f.readline().strip())
-        num_feature = int(f.readline().strip())
+    adj_list_file = path+dataset+".adj_list"
+    input_npy = path+"npy/"+dataset+".input_"
+    output_npy = path+"npy/"+dataset+".output_"
 
     # adj Matrix
     graph = {}
@@ -85,35 +77,32 @@ def load_my_data(path="../data/luis/big/", dataset="hanging"):
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
     adj = normalize(adj + sp.eye(adj.shape[0]))
 
-    try:
-        in_features = np.load(input_npy)
-    except IOError:
-        input_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
-        in_features = np.reshape(
-            input_arr, (input_arr.shape[0], adj.shape[0], num_feature))  # 총 10개 피쳐
-        np.save(input_npy, in_features)
+    in_features = np.empty((0, adj.shape[0], 13))
+    out_features = np.empty((0, adj.shape[0], 3))
+    input_ind = 1
+    while True:
+        try:
+            in_feat = np.load(input_npy+"{}.npy".format(input_ind))
+            out_feat = np.load(output_npy+"{}.npy".format(input_ind))
+            in_features = np.append(in_features, in_feat, axis=0)
+            out_features = np.append(out_features, out_feat, axis=0)
+            input_ind += 1
+        except IOError:
+            break
+        pass
 
-    try:
-        out_feature = np.load(output_npy)
-    except IOError:
-        output_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
-        out_feature = np.reshape(
-            output_arr, (output_arr.shape[0], adj.shape[0], num_feature))  # 총 10개 피쳐
-        np.save(output_npy, out_feature)
+    assert len(in_features) == len(out_features)
+    p = np.random.permutation(len(in_features))
+    in_features = in_features[p]
+    out_features = out_features[p]
+    in_features = torch.Tensor(in_features[:-num_test])
+    out_features = torch.Tensor(out_features[:-num_test])
+    test_in_features = torch.Tensor(in_features[-num_test:])
+    test_out_features = torch.Tensor(out_features[-num_test:])
 
-    in_features = torch.Tensor((in_features))
-    out_feature = torch.Tensor((out_feature))
     adj = sparse_mx_to_torch_sparse_tensor(adj)
 
-    idx_train = range(25)
-    idx_val = range(25)
-    idx_test = range(25, 30)
-
-    idx_train = torch.LongTensor(idx_train)
-    idx_val = torch.LongTensor(idx_val)
-    idx_test = torch.LongTensor(idx_test)
-
-    return adj, in_features, out_feature, idx_train, idx_val, idx_test
+    return adj, in_features, out_features, test_in_features, test_out_features
 
 
 def load_save_data(path="../data/luis/big/", dataset="hanging"):
@@ -183,6 +172,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 
 if __name__ == "__main__":
+
     load_save_data(dataset="hanging_lamp")
     load_save_data(dataset="drop_bunny_box")
     load_save_data(dataset="hanging_bunny_box1")
