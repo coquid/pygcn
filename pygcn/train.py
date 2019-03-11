@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from pygcn.utils import load_my_data
 
-from pygcn.models import GCN, MyGCN
+from pygcn.models import GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5
 
 import pickle
 # Training settings
@@ -21,15 +21,15 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=100,
+parser.add_argument('--epochs', type=int, default=75,
                     help='Number of epochs to train.')
-parser.add_argument('--lr', type=float, default=0.0001,
+parser.add_argument('--lr', type=float, default=0.00002,
                     help='Initial learning rate.')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
 parser.add_argument('--hidden', type=int, default=10,
                     help='Number of hidden units.')
-parser.add_argument('--dropout', type=float, default=0.5,
+parser.add_argument('--dropout', type=float, default=0.3,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--batch_size', type=int, default=1,
                     help='Batch size')
@@ -37,6 +37,8 @@ parser.add_argument('--cost_func', type=str, default="mse_loss",
                     help='cost_func : mse_loss,l1_loss , smooth_l1_loss , ')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
+parser.add_argument('--model', type=str, default="MyGCN_v2",
+                    help='MyGCN')
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -54,12 +56,20 @@ loss_function_dict = {
     'l1_loss': F.l1_loss,
     'smooth_l1_loss': F.smooth_l1_loss
 }
+model_dict = {
+    'MyGCN_v1': MyGCN_v1,
+    'MyGCN_v2': MyGCN_v2,
+    'MyGCN_v3': MyGCN_v3,
+    'MyGCN_v4': MyGCN_v4,
+    'MyGCN_v5': MyGCN_v5
+}
 loss_fuction = loss_function_dict[args.cost_func]
+_model = model_dict[args.model]
 # Model and optimizer
-model = MyGCN(nfeat=features.shape[2],
-              nhid=args.hidden,
-              nout=out_feature.shape[2],
-              dropout=args.dropout)
+model = _model(nfeat=features.shape[2],
+               nhid=args.hidden,
+               nout=out_feature.shape[2],
+               dropout=args.dropout)
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
 
@@ -74,7 +84,6 @@ if args.cuda:
 
 def train(epoch):
     t = time.time()
-    torch.cuda.synchronize()
     num_data = features.shape[0]
     rand_sample = np.random.randint(num_data, size=10)
     if not args.fastmode:
@@ -118,7 +127,7 @@ def train(epoch):
           'time: {:.4f}s'.format(time.time() - t))
 
 
-def save_tensor(trial = 1):
+def save_tensor(trial=1):
     path = "../result/model/" + "trial_{}".format(trial)
     torch.save(model.state_dict(), path+".pt")
     torch.save(optimizer.state_dict(), path+".opt")
@@ -163,5 +172,5 @@ print("Optimization Finished!")
 print("Total time elapsed: {:.4f}s".format(time.time() - t_total))
 
 # Testing
-save_tensor(trial= args.trial)
+save_tensor(trial=args.trial)
 test()

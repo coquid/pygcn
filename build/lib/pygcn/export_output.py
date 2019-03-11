@@ -17,7 +17,7 @@ import pickle
 
 # Training settings
 parser = argparse.ArgumentParser()
-parser.add_argument('--filename', type=str, default="trial_1",
+parser.add_argument('--filename', type=str, default="trial_9",
                     help='filename')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
@@ -72,13 +72,12 @@ def export():
     model.eval()
     output = model(test_in_features, adj)
     loss_test = loss_fuction(output, test_out_features)
-    print(model.state_dict())
-    print(optimizer.state_dict())
 
     arr = output.cpu().detach().numpy()
     new_arr = arr.reshape(arr.shape[0], -1)
+
     np.savetxt(path+args.filename+".output_vec",
-               new_arr, delimiter=" ", encoding='latin1')
+               new_arr, delimiter=" ")
 
     with open(path+args.filename+".output_info", 'w') as f:
         lines = "numFrame {}\n".format(arr.shape[0])
