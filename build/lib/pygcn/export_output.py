@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_my_data
+from pygcn.utils import load_dc_test
 
 from pygcn.models import GCN, MyGCN
 
@@ -41,7 +41,7 @@ if args.cuda:
     torch.cuda.manual_seed(_seed)
 
 # Load data
-adj,test_in_features, test_out_features = load_dc_test()
+adj, test_in_features, test_out_features = load_dc_test()
 
 if args.cuda:
     adj = adj.cuda()
@@ -71,33 +71,33 @@ if args.cuda:
 def export():
     model.eval()
     output = model(test_in_features, adj)
+    loss_test = loss_fuction(output, test_out_features)
     print(model.state_dict())
     print(optimizer.state_dict())
 
-   
-
     arr = output.cpu().detach().numpy()
-    new_arr = arr.reshape(arr.shape[0],-1)
-    np.savetxt(path+args.filename+".output_vec",new_arr ,delimiter=" ")
+    new_arr = arr.reshape(arr.shape[0], -1)
+    np.savetxt(path+args.filename+".output_vec",
+               new_arr, delimiter=" ", encoding='latin1')
 
-    with open(path+args.filename+".output_info",'w') as f:
-
+    with open(path+args.filename+".output_info", 'w') as f:
+        lines = "numFrame {}\n".format(arr.shape[0])
+        f.write(lines)
         lines = "seed             : {}\n".format(_seed)
         f.write(lines)
-        lines ="learning rate    : {}\n".format(_lr)
+        lines = "learning rate    : {}\n".format(_lr)
         f.write(lines)
-        lines ="num hidden layer : {}\n".format(_hidden)
+        lines = "num hidden layer : {}\n".format(_hidden)
         f.write(lines)
-        lines ="dropout          : {}\n".format(_dropout)
+        lines = "dropout          : {}\n".format(_dropout)
         f.write(lines)
-        lines ="batch_size       : {}\n".format(_batch_size)
+        lines = "batch_size       : {}\n".format(_batch_size)
         f.write(lines)
-        lines ="cost_func        : {}\n".format(_cost_func)
+        lines = "cost_func        : {}\n".format(_cost_func)
         f.write(lines)
-        lines ="Test set results :loss= {:.4f}".format(loss_test.item())
+        lines = "Test set results :loss= {:.4f}".format(loss_test.item())
         f.write(lines)
         pass
-   
 
 
 export()
