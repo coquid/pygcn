@@ -17,7 +17,7 @@ import pickle
 
 # Training settings
 parser = argparse.ArgumentParser()
-parser.add_argument('--filename', type=str, default="batch_size_1_lr_0.0001_dropout_0.5",
+parser.add_argument('--filename', type=str, default="trial_1",
                     help='filename')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
