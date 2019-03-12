@@ -27,14 +27,10 @@ parser.add_argument('--lr', type=float, default=0.00002,
                     help='Initial learning rate.')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--hidden', type=int, default=10,
-                    help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.3,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--batch_size', type=int, default=1,
                     help='Batch size')
-parser.add_argument('--cost_func', type=str, default="mse_loss",
-                    help='cost_func : mse_loss,l1_loss , smooth_l1_loss , ')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
 parser.add_argument('--model', type=str, default="MyGCN_v3",
@@ -51,11 +47,7 @@ if args.cuda:
 # Load data
 adj, features, out_feature, test_in_features, test_out_features = load_my_data()
 
-loss_function_dict = {
-    'mse_loss': F.mse_loss,
-    'l1_loss': F.l1_loss,
-    'smooth_l1_loss': F.smooth_l1_loss
-}
+
 model_dict = {
     'MyGCN_v1': MyGCN_v1,
     'MyGCN_v2': MyGCN_v2,
@@ -64,7 +56,7 @@ model_dict = {
     'MyGCN_v5': MyGCN_v5,
     'MyGCN_v6': MyGCN_v6
 }
-loss_fuction = loss_function_dict[args.cost_func]
+loss_fuction = F.mse_loss
 _model = model_dict[args.model]
 # Model and optimizer
 model = _model(nfeat=features.shape[2],
