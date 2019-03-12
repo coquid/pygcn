@@ -184,3 +184,71 @@ class MyGCN_v6(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.gc10(x, adj)
         return x
+
+
+class MyGCN_v7(nn.Module):
+    def __init__(self, nfeat, nhid, nout, dropout):
+        super(MyGCN_v7, self).__init__()
+        self.gc1 = MyGraphConvolution(nfeat, 12)
+        self.bn1 = nn.BatchNorm1d(num_features=2371)
+        self.gc2 = MyGraphConvolution(12, 11)
+        self.bn2 = nn.BatchNorm1d(num_features=2371)
+        self.gc3 = MyGraphConvolution(11, 10)
+        self.bn3 = nn.BatchNorm1d(num_features=2371)
+        self.gc4 = MyGraphConvolution(10, 9)
+        self.bn4 = nn.BatchNorm1d(num_features=2371)
+        self.gc5 = MyGraphConvolution(9, 8)
+        self.bn5 = nn.BatchNorm1d(num_features=2371)
+        self.gc6 = MyGraphConvolution(8, 7)
+        self.bn6 = nn.BatchNorm1d(num_features=2371)
+        self.gc7 = MyGraphConvolution(7, 6)
+        self.bn7 = nn.BatchNorm1d(num_features=2371)
+        self.gc8 = MyGraphConvolution(6, 5)
+        self.gc9 = MyGraphConvolution(5, 4)
+        self.gc10 = MyGraphConvolution(4, nout)
+        self.dropout = dropout
+
+    def forward(self, x, adj):
+        x = (self.gc1(x, adj))
+        x = self.bn1(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = (self.gc2(x, adj))
+        x = self.bn2(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = (self.gc3(x, adj))
+        x = self.bn3(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = (self.gc4(x, adj))
+        x = self.bn4(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = (self.gc5(x, adj))
+        x = self.bn5(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = self.gc6(x, adj)
+        x = self.bn6(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = self.gc7(x, adj)
+        x = self.bn7(x)
+        # activation
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = self.gc8(x, adj)
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = self.gc9(x, adj)
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        x = self.gc10(x, adj)
+        return x
