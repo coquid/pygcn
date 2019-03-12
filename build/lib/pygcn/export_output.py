@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from pygcn.utils import load_dc_test
 
-from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5
+from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5, MyGCN_v6
 
 import pickle
 

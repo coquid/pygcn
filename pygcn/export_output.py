@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from pygcn.utils import load_dc_test
 
-from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5
+from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5, MyGCN_v6
 
 import pickle
 
@@ -66,7 +66,8 @@ model_dict = {
     'MyGCN_v2': MyGCN_v2,
     'MyGCN_v3': MyGCN_v3,
     'MyGCN_v4': MyGCN_v4,
-    'MyGCN_v5': MyGCN_v5
+    'MyGCN_v5': MyGCN_v5,
+    'MyGCN_v6': MyGCN_v6
 }
 loss_fuction = loss_function_dict[_cost_func]
 _model = model_dict[args.model]
