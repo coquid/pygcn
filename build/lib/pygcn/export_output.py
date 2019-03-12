@@ -11,16 +11,18 @@ import torch.optim as optim
 
 from pygcn.utils import load_dc_test
 
-from pygcn.models import GCN, MyGCN
+from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5
 
 import pickle
 
 # Training settings
 parser = argparse.ArgumentParser()
-parser.add_argument('--filename', type=str, default="trial_9",
+parser.add_argument('--filename', type=str, default="trial_11",
                     help='filename')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
+parser.add_argument('--model', type=str, default="MyGCN_v2",
+                    help='MyGCN')
 args = parser.parse_args()
 path = "../result/model/"
 with open(path+args.filename+"_arg.pkl", 'rb') as f:
@@ -40,8 +42,10 @@ torch.manual_seed(_seed)
 if args.cuda:
     torch.cuda.manual_seed(_seed)
 
+test_file_name = "fixed_hanging_lamp_v2"
 # Load data
-adj, test_in_features, test_out_features = load_dc_test()
+adj, test_in_features, test_out_features = load_dc_test(
+    dataset=test_file_name)
 
 if args.cuda:
     adj = adj.cuda()
@@ -53,10 +57,18 @@ loss_function_dict = {
     'l1_loss': F.l1_loss,
     'smooth_l1_loss': F.smooth_l1_loss
 }
+model_dict = {
+    'MyGCN_v1': MyGCN_v1,
+    'MyGCN_v2': MyGCN_v2,
+    'MyGCN_v3': MyGCN_v3,
+    'MyGCN_v4': MyGCN_v4,
+    'MyGCN_v5': MyGCN_v5
+}
 loss_fuction = loss_function_dict[_cost_func]
+_model = model_dict[args.model]
 # Model and optimizer
-model = MyGCN(test_in_features.shape[2], _hidden,
-              test_out_features.shape[2], _dropout)
+model = _model(test_in_features.shape[2], _hidden,
+               test_out_features.shape[2], _dropout)
 optimizer = optim.Adam(model.parameters())
 model.load_state_dict(torch.load(path+args.filename+".pt"))
 
@@ -76,10 +88,10 @@ def export():
     arr = output.cpu().detach().numpy()
     new_arr = arr.reshape(arr.shape[0], -1)
 
-    np.savetxt(path+args.filename+".output_vec",
+    np.savetxt(path+args.filename+"_"+test_file_name+".output_vec",
                new_arr, delimiter=" ")
 
-    with open(path+args.filename+".output_info", 'w') as f:
+    with open(path+args.filename+"_"+test_file_name+".output_info", 'w') as f:
         lines = "numFrame {}\n".format(arr.shape[0])
         f.write(lines)
         lines = "seed             : {}\n".format(_seed)

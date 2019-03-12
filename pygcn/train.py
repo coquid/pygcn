@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from pygcn.utils import load_my_data
 
-from pygcn.models import GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5
+from pygcn.models import GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5, MyGCN_v6
 
 import pickle
 # Training settings
@@ -37,7 +37,7 @@ parser.add_argument('--cost_func', type=str, default="mse_loss",
                     help='cost_func : mse_loss,l1_loss , smooth_l1_loss , ')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
-parser.add_argument('--model', type=str, default="MyGCN_v2",
+parser.add_argument('--model', type=str, default="MyGCN_v3",
                     help='MyGCN')
 
 args = parser.parse_args()
@@ -61,7 +61,8 @@ model_dict = {
     'MyGCN_v2': MyGCN_v2,
     'MyGCN_v3': MyGCN_v3,
     'MyGCN_v4': MyGCN_v4,
-    'MyGCN_v5': MyGCN_v5
+    'MyGCN_v5': MyGCN_v5,
+    'MyGCN_v6': MyGCN_v6
 }
 loss_fuction = loss_function_dict[args.cost_func]
 _model = model_dict[args.model]
@@ -161,6 +162,7 @@ def print_model_info():
     print("batch_size       : {}".format(args.batch_size))
     print("cost_func        : {}".format(args.cost_func))
     pass
+
 
     # Train model
 t_total = time.time()

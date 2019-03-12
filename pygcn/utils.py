@@ -105,7 +105,7 @@ def load_my_data(path="../data/luis/big/", dataset="hanging", num_test=10):
     return adj, in_features, out_features, test_in_features, test_out_features
 
 
-def load_dc_test(path="../data/luis/big/", dataset="dc_test_hanging"):
+def load_dc_test(path="../data/luis/big/dc_test_hanging/", dataset="dc_test_hanging"):
     """Load cloth simulation dataset"""
     print('Loading {} dataset...'.format(dataset))
 
