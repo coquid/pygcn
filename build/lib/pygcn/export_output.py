@@ -15,6 +15,10 @@ from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN
 
 import pickle
 
+
+test_file_name = "fixed_hanging_lamp_v7"
+
+
 # Training settings
 parser = argparse.ArgumentParser()
 parser.add_argument('--filename', type=str, default="trial_11",
@@ -42,7 +46,7 @@ torch.manual_seed(_seed)
 if args.cuda:
     torch.cuda.manual_seed(_seed)
 
-test_file_name = "fixed_hanging_lamp_v2"
+
 # Load data
 adj, test_in_features, test_out_features = load_dc_test(
     dataset=test_file_name)
