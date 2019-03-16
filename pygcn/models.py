@@ -21,28 +21,28 @@ class GCN(nn.Module):
 class MyGCN_v1(nn.Module):
     def __init__(self, nfeat, nhid, nout, dropout):
         super(MyGCN_v1, self).__init__()
-        self.gc1 = MyGraphConvolution(nfeat, nhid)
-        self.gc2 = MyGraphConvolution(nhid, nhid)
-        self.gc3 = MyGraphConvolution(nhid, nhid)
-        self.gc4 = MyGraphConvolution(nhid, nhid)
-        self.gc5 = MyGraphConvolution(nhid, nhid)
-        self.gc6 = MyGraphConvolution(nhid, nhid)
-        self.gc7 = MyGraphConvolution(nhid, nhid)
-        self.gc8 = MyGraphConvolution(nhid, nhid)
-        self.gc9 = MyGraphConvolution(nhid, nhid)
-        self.gc10 = MyGraphConvolution(nhid, nhid)
-        self.gc11 = MyGraphConvolution(nhid, nhid)
-        self.gc12 = MyGraphConvolution(nhid, nhid)
-        self.gc13 = MyGraphConvolution(nhid, nhid)
-        self.gc14 = MyGraphConvolution(nhid, nout)
+        self.gc1 = GraphConvolution(nfeat, nhid)
+        self.gc2 = GraphConvolution(nhid, nhid)
+        self.gc3 = GraphConvolution(nhid, nhid)
+        self.gc4 = GraphConvolution(nhid, nhid)
+        self.gc5 = GraphConvolution(nhid, nhid)
+        self.gc6 = GraphConvolution(nhid, nhid)
+        self.gc7 = GraphConvolution(nhid, nhid)
+        self.gc8 = GraphConvolution(nhid, nhid)
+        self.gc9 = GraphConvolution(nhid, nhid)
+        self.gc10 = GraphConvolution(nhid, nhid)
+        self.gc11 = GraphConvolution(nhid, nhid)
+        self.gc12 = GraphConvolution(nhid, nhid)
+        self.gc13 = GraphConvolution(nhid, nhid)
+        self.gc14 = GraphConvolution(nhid, nout)
         self.dropout = dropout
 
     def forward(self, x, adj):
-        x = F.relu(self.gc1(x, adj))
+        x = (self.gc1(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc2(x, adj))
+        x = (self.gc2(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc3(x, adj))
+        x = (self.gc3(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
         x = F.relu(self.gc4(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
@@ -66,6 +66,7 @@ class MyGCN_v1(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.gc14(x, adj)
         return x
+
 
 class MyGCN_v2(nn.Module):
     def __init__(self, nfeat, nhid, nout, dropout):
@@ -117,7 +118,6 @@ class MyGCN_v2(nn.Module):
         return x
 
 
-
 class MyGCN_v3(nn.Module):
     def __init__(self, nfeat, nhid, nout, dropout):
         super(MyGCN_v3, self).__init__()
@@ -137,58 +137,6 @@ class MyGCN_v3(nn.Module):
         x = (self.gc3(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
         x = (self.gc4(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = (self.gc5(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = self.gc6(x, adj)
-        return x
-
-
-class MyGCN_v4(nn.Module):
-    def __init__(self, nfeat, nhid, nout, dropout):
-        super(MyGCN_v4, self).__init__()
-        self.gc1 = MyGraphConvolution(nfeat, 12)
-        self.gc2 = MyGraphConvolution(12, 10)
-        self.gc3 = MyGraphConvolution(10, 8)
-        self.gc4 = MyGraphConvolution(8, 6)
-        self.gc5 = MyGraphConvolution(6, 4)
-        self.gc6 = MyGraphConvolution(4, nout)
-        self.dropout = dropout
-
-    def forward(self, x, adj):
-        x = (self.gc1(x, adj))
-        x = F.dropout(x, p=0, training=self.training)
-        x = F.relu(self.gc2(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.tanhshrink(self.gc3(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.tanhshrink(self.gc4(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = (self.gc5(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = self.gc6(x, adj)
-        return x
-
-
-class MyGCN_v5(nn.Module):
-    def __init__(self, nfeat, nhid, nout, dropout):
-        super(MyGCN_v5, self).__init__()
-        self.gc1 = MyGraphConvolution(nfeat, 12)
-        self.gc2 = MyGraphConvolution(12, 10)
-        self.gc3 = MyGraphConvolution(10, 8)
-        self.gc4 = MyGraphConvolution(8, 6)
-        self.gc5 = MyGraphConvolution(6, 4)
-        self.gc6 = MyGraphConvolution(4, nout)
-        self.dropout = dropout
-
-    def forward(self, x, adj):
-        x = (self.gc1(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc2(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.tanhshrink(self.gc3(x, adj))
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.tanhshrink(self.gc4(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
         x = (self.gc5(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
@@ -234,7 +182,7 @@ class MyGCN_v6(nn.Module):
         return x
 
 
-class MyGCN_v7(nn.Module):
+class MyGCN_batch_norm(nn.Module):
     def __init__(self, nfeat, nhid, nout, dropout):
         super(MyGCN_v7, self).__init__()
         self.gc1 = MyGraphConvolution(nfeat, 12)

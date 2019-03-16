@@ -4,13 +4,13 @@ import torch
 import networkx as nx
 
 
-def load_my_data(path="../my_data/training/", dataset="quad", num_test=10):
+def load_my_data(path="../my_data/training/", dataset="quad", num_test=20, output_type="solution"):
     """Load cloth simulation dataset"""
     print('Loading {} dataset...'.format(dataset))
 
-    adj_list_file = path+dataset+".adj_list"
-    input_npy = path+"npy/"+dataset
-    output_npy = path+"npy/"+dataset
+    adj_list_file = path+output_type+"/quad.adj_list"
+    input_npy = path+output_type+"/npy/"+dataset
+    output_npy = path+output_type+"/npy/"+dataset
 
     # adj Matrix
     graph = {}
@@ -27,8 +27,15 @@ def load_my_data(path="../my_data/training/", dataset="quad", num_test=10):
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
     adj = normalize(adj + sp.eye(adj.shape[0]))
 
-    in_features = np.empty((0, adj.shape[0], 13))
-    out_features = np.empty((0, adj.shape[0], 3))
+    out_feature_info = {
+        'solution': 3,
+        'unary': 1,
+        'optimal': 1
+    }
+    num_feature = 14
+    num_out_feature = out_feature_info[output_type]
+    in_features = np.empty((0, adj.shape[0], num_feature))
+    out_features = np.empty((0, adj.shape[0], num_out_feature))
     input_ind = 1
     while True:
         try:
@@ -104,21 +111,27 @@ def load_dc_test(path="../data/luis/big/dc_test_hanging/", dataset="dc_test_hang
     return adj, in_features, out_features
 
 
-def load_save_data(path="../my_data/training/", dataset="filename"):
+def load_save_data(path="../my_data/training/", dataset="filename", data_type="solution"):
     """Load cloth simulation dataset"""
     print('Loading {} dataset...'.format(dataset))
 
-    info_file = path+"quad.luis_info"
+    info_file = path+data_type+"/quad.luis_info"
 
-    input_file = path+"txt/"+dataset+".input"
-    output_file = path+"txt/"+dataset+".output"
-    input_npy = path+"npy/"+dataset+".input.npy"
-    output_npy = path+"npy/"+dataset+".output.npy"
+    input_file = path+data_type+"/txt/"+dataset+".input"
+    output_file = path+data_type+"/txt/"+dataset+".output"
+    input_npy = path+data_type+"/npy/"+dataset+".input.npy"
+    output_npy = path+data_type+"/npy/"+dataset+".output.npy"
 
     with open(info_file) as f:
         num_vert = int(f.readline().strip())
         num_feature = int(f.readline().strip())
-
+    num_feature = 14
+    out_feature_info = {
+        'solution': 3,
+        'unary': 1,
+        'optimal': 1
+    }
+    num_out_feature = out_feature_info[data_type]
     try:
         in_features = np.load(input_npy)
     except IOError:
@@ -130,10 +143,16 @@ def load_save_data(path="../my_data/training/", dataset="filename"):
     try:
         out_feature = np.load(output_npy)
     except IOError:
-        output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
-        out_feature = np.reshape(
-            output_arr, (output_arr.shape[0], num_vert, 3))  # 총 3개 피쳐
-        np.save(output_npy, out_feature)
+        if(data_type == 'unary'):
+            output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
+            out_feature = np.reshape(
+                output_arr, (output_arr.shape[0], num_out_feature))  # 총 3개 피쳐
+            np.save(output_npy, out_feature)
+        else:
+            output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
+            out_feature = np.reshape(
+                output_arr, (output_arr.shape[0], num_vert, num_out_feature))  # 총 3개 피쳐
+            np.save(output_npy, out_feature)
 
 
 def normalize(mx):
@@ -165,12 +184,29 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 if __name__ == "__main__":
     # load_dc_test(dataset="dc_test_hanging")
-    load_save_data(dataset="drop_bunny_box")
-    load_save_data(dataset="hanging_bunny_box")
-    load_save_data(dataset="hanging_lamp_v2")
-    load_save_data(dataset="hanging_lamp_v3")
-    load_save_data(dataset="hanging_lamp_v4")
-    load_save_data(dataset="hanging_lamp_v5")
-    load_save_data(dataset="hanging_lamp_v6")
+    # load_save_data(dataset="drop_bunny_box")
+    # load_save_data(dataset="hanging_bunny_box")
+    # load_save_data(dataset="hanging_lamp_v2")
+    # load_save_data(dataset="hanging_lamp_v3")
+    # load_save_data(dataset="hanging_lamp_v4")
+    # load_save_data(dataset="hanging_lamp_v5")
+    # load_save_data(dataset="hanging_lamp_v6")
 
-# adj, features, labels, idx_train, idx_val, idx_test = load_data()
+    # save data
+    load_save_data(path="./my_data/training/",
+                   dataset="drop_bunny_box",    data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_bunny_box", data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp",      data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp_v2",   data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp_v3",   data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp_v4",   data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp_v5",   data_type='solution')
+    load_save_data(path="./my_data/training/",
+                   dataset="hanging_lamp_v6",   data_type='solution')
+    # adj, features, labels, idx_train, idx_val, idx_test = load_data()
