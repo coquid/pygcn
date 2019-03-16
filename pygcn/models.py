@@ -68,6 +68,56 @@ class MyGCN_v1(nn.Module):
         return x
 
 
+class MyGCN_v1_optimal(nn.Module):
+    def __init__(self, nfeat, nhid, nout, dropout):
+        super(MyGCN_v1_optimal, self).__init__()
+        self.gc1 = GraphConvolution(nfeat, nhid)
+        self.gc2 = GraphConvolution(nhid, nhid)
+        self.gc3 = GraphConvolution(nhid, nhid)
+        self.gc4 = GraphConvolution(nhid, nhid)
+        self.gc5 = GraphConvolution(nhid, nhid)
+        self.gc6 = GraphConvolution(nhid, nhid)
+        self.gc7 = GraphConvolution(nhid, nhid)
+        self.gc8 = GraphConvolution(nhid, nhid)
+        self.gc9 = GraphConvolution(nhid, nhid)
+        self.gc10 = GraphConvolution(nhid, nhid)
+        self.gc11 = GraphConvolution(nhid, nhid)
+        self.gc12 = GraphConvolution(nhid, nhid)
+        self.gc13 = GraphConvolution(nhid, nhid)
+        self.gc14 = GraphConvolution(nhid, nout)
+        self.dropout = dropout
+
+    def forward(self, x, adj):
+        x = (self.gc1(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = (self.gc2(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = (self.gc3(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc4(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc5(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc6(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc7(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc8(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc9(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc10(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc11(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc12(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.relu(self.gc13(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.gc14(x, adj)
+        return F.sigmoid(x)
+
+
 class MyGCN_v2(nn.Module):
     def __init__(self, nfeat, nhid, nout, dropout):
         super(MyGCN_v2, self).__init__()

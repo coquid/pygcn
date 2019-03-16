@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=50,
+parser.add_argument('--epochs', type=int, default=100,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.00001,
                     help='Initial learning rate.')
@@ -90,7 +90,7 @@ def train(epoch):
 
 
 def save_tensor(trial=1):
-    path = "../result/model/" + "trial_{}".format(trial)
+    path = "./result/model/" + "trial_{}".format(trial)
     torch.save(model.state_dict(), path+".pt")
     torch.save(optimizer.state_dict(), path+".opt")
     arg_dict = {

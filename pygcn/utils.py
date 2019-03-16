@@ -137,7 +137,7 @@ def load_save_data(path="../my_data/training/", dataset="filename", data_type="s
     except IOError:
         input_arr = np.loadtxt(input_file, skiprows=1, delimiter=",")
         in_features = np.reshape(
-            input_arr, (input_arr.shape[0], num_vert, num_feature))  # 총 10개 피쳐
+            input_arr, (input_arr.shape[0], num_vert, num_feature))
         np.save(input_npy, in_features)
 
     try:
@@ -146,7 +146,7 @@ def load_save_data(path="../my_data/training/", dataset="filename", data_type="s
         if(data_type == 'unary'):
             output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
             out_feature = np.reshape(
-                output_arr, (output_arr.shape[0], num_out_feature))  # 총 3개 피쳐
+                output_arr, (output_arr.shape[0], num_out_feature))
             np.save(output_npy, out_feature)
         else:
             output_arr = np.loadtxt(output_file, skiprows=1, delimiter=",")
@@ -172,6 +172,13 @@ def accuracy(output, labels):
     return correct / len(labels)
 
 
+def accuracy_optimal(output, labels):
+    pred = output >= 0.5
+    truth = labels >= 0.5
+    acc = pred.eq(truth).sum() / len(labels)
+    return acc
+
+
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""
     sparse_mx = sparse_mx.tocoo().astype(np.float32)
@@ -193,20 +200,20 @@ if __name__ == "__main__":
     # load_save_data(dataset="hanging_lamp_v6")
 
     # save data
-    load_save_data(path="./my_data/training/",
-                   dataset="drop_bunny_box",    data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_bunny_box", data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp",      data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp_v2",   data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp_v3",   data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp_v4",   data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp_v5",   data_type='solution')
-    load_save_data(path="./my_data/training/",
-                   dataset="hanging_lamp_v6",   data_type='solution')
+    load_save_data(path="../my_data/training/",
+                   dataset="drop_bunny_box",    data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_bunny_box", data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp",      data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp_v2",   data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp_v3",   data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp_v4",   data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp_v5",   data_type='unary')
+    load_save_data(path="../my_data/training/",
+                   dataset="hanging_lamp_v6",   data_type='unary')
     # adj, features, labels, idx_train, idx_val, idx_test = load_data()
