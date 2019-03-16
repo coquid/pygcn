@@ -83,10 +83,10 @@ def train(epoch):
         loss_train.backward()
         optimizer.step()
 
-    acc = accuracy_optimal(output[vert_permute], batch_out[vert_permute]) * 100
+    acc = accuracy_optimal(output[vert_permute], batch_out[vert_permute])
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.6f}'.format(loss_train.item()),
-          'acc_train: {:.3f}'.format(acc.item()),
+          'acc_train: {:.3f}%'.format(acc.item() * 100),
           'time: {:.4f}s'.format(time.time() - t))
 
 

@@ -175,7 +175,7 @@ def accuracy(output, labels):
 def accuracy_optimal(output, labels):
     pred = output >= 0.5
     truth = labels >= 0.5
-    acc = pred.eq(truth).sum() / len(labels)
+    acc = pred.eq(truth).double().sum() / len(labels)
     return acc
 
 
