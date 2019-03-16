@@ -21,13 +21,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=100,
+parser.add_argument('--epochs', type=int, default=150,
                     help='Number of epochs to train.')
-parser.add_argument('--lr', type=float, default=0.00001,
+parser.add_argument('--lr', type=float, default=0.0007,
                     help='Initial learning rate.')
-parser.add_argument('--weight_decay', type=float, default=5e-4,
+parser.add_argument('--weight_decay', type=float, default=5e-5,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--dropout', type=float, default=0.3,
+parser.add_argument('--dropout', type=float, default=0.0,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
@@ -104,21 +104,12 @@ def save_tensor(trial=1):
     f.close()
 
 
-def test():
-    model.eval()
-    output = model(test_in_features, adj)
-    loss_test = loss_fuction(output, test_out_features)
-    print("Test set results:",
-          "loss= {:.4f}".format(loss_test.item()))
-
-
 def print_model_info():
     print("Model Info")
     print("seed             : {}".format(args.seed))
     print("learning rate    : {}".format(args.lr))
     print("dropout          : {}".format(args.dropout))
     pass
-
 
     # Train model
 t_total = time.time()
@@ -131,7 +122,6 @@ print("Total time elapsed: {:.4f}s".format(time.time() - t_total))
 
 # Testing
 save_tensor(trial=args.trial)
-test()
 
 
 # Export output_feature ( diff_vec )
