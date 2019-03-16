@@ -97,6 +97,8 @@ def train(epoch):
         loss_train.backward()
         optimizer.step()
 
+    full_out = model(features,adj)
+    full_loss = loss_fuction(full_out,out_feature)
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.6f}'.format(loss_train.item()),
           'time: {:.4f}s'.format(time.time() - t))
@@ -144,3 +146,6 @@ print("Total time elapsed: {:.4f}s".format(time.time() - t_total))
 # Testing
 save_tensor(trial=args.trial)
 test()
+
+
+# Export output_feature ( diff_vec )

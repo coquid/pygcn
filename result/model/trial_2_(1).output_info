@@ -1,0 +1,5 @@
+numFrame 80
+seed             : 42
+learning rate    : 5e-06
+dropout          : 0.3
+Test set results :loss= 0.2477
