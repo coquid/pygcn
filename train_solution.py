@@ -78,25 +78,14 @@ def train(epoch):
         optimizer.zero_grad()
         batch = features[ind]
         batch_out = out_feature[ind]
-        # prev_batch_ind = ind
-        # curr_batch_ind = ind+1
-        # if(ind == 0):
-        #     batch = features[:curr_batch_ind].cuda()
-        #     batch_out = out_feature[:curr_batch_ind].cuda()
-        # else:
-        #     batch = features[prev_batch_ind:curr_batch_ind].cuda()
-        #     batch_out = out_feature[prev_batch_ind:curr_batch_ind].cuda()
-
         output = model(batch, adj)
         loss_train = loss_fuction(
             output[vert_permute], batch_out[vert_permute])
         loss_train.backward()
         optimizer.step()
 
-    full_out = model(features, adj)
-    full_loss = loss_fuction(full_out, out_feature)
     print('Epoch: {:04d}'.format(epoch+1),
-          'loss_train: {:.6f}'.format(full_loss.item()),
+          'loss_train: {:.6f}'.format(loss_train.item()),
           'time: {:.4f}s'.format(time.time() - t))
 
 
