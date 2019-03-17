@@ -63,13 +63,12 @@ def load_my_data(path="../my_data/training/", dataset="quad", num_test=20, outpu
     return adj, in_features, out_features, test_in_features, test_out_features
 
 
-def load_dc_test(path="../data/luis/big/dc_test_hanging/", dataset="dc_test_hanging"):
-    """Load cloth simulation dataset"""
+def load_test_data(path="./my_data/test/", output_type="solution", dataset="filename"):
+    """Load cloth test dataset"""
     print('Loading {} dataset...'.format(dataset))
-
-    adj_list_file = path+dataset+".adj_list"
-    input_npy = path+"npy/"+dataset+".input"
-    output_npy = path+"npy/"+dataset+".output"
+    adj_list_file = path+output_type+"/quad.adj_list"
+    input_npy = path+output_type+"/npy/"+dataset+".input.npy"
+    output_npy = path+output_type+"/npy/"+dataset+".output.npy"
 
     # adj Matrix
     graph = {}
@@ -86,26 +85,12 @@ def load_dc_test(path="../data/luis/big/dc_test_hanging/", dataset="dc_test_hang
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
     adj = normalize(adj + sp.eye(adj.shape[0]))
 
-    try:
-        in_features = np.load(input_npy+".npy")
-    except IOError:
-        input_arr = np.loadtxt(path+dataset+".input",
-                               skiprows=1, delimiter=",")
-        in_features = np.reshape(
-            input_arr, (input_arr.shape[0], adj.shape[0], -1))  # 총 13개 피쳐
-        np.save(input_npy, in_features)
-    try:
-        out_features = np.load(output_npy+".npy")
-    except IOError:
-        output_arr = np.loadtxt(path+dataset+".output",
-                                skiprows=1, delimiter=",")
-        out_features = np.reshape(
-            output_arr, (output_arr.shape[0], adj.shape[0], -1))  # 총 10개 피쳐
-        np.save(output_npy, out_features)
+    in_features = np.load(input_npy)
+    out_features = np.load(output_npy)
 
+    assert len(in_features) == len(out_features)
     in_features = torch.Tensor(in_features)
     out_features = torch.Tensor(out_features)
-
     adj = sparse_mx_to_torch_sparse_tensor(adj)
 
     return adj, in_features, out_features
@@ -190,7 +175,6 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 
 if __name__ == "__main__":
-    # load_dc_test(dataset="dc_test_hanging")
     # load_save_data(dataset="drop_bunny_box")
     # load_save_data(dataset="hanging_bunny_box")
     # load_save_data(dataset="hanging_lamp_v2")

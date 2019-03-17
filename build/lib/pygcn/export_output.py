@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from pygcn.utils import load_my_data
 
-from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v4, MyGCN_v5, MyGCN_v6
+from pygcn.models import GCN, GCN, MyGCN_v1, MyGCN_v2, MyGCN_v3, MyGCN_v6
 
 import pickle
 
@@ -45,8 +45,6 @@ if args.cuda:
 
 
 # Load data
-# adj, test_in_features, test_out_features = load_dc_test(
-#     dataset=test_file_name)
 adj, test_in_feature, test_out_feature, _, _ = load_my_data()
 test_in_features = test_in_feature[0:80]
 test_out_features = test_out_feature[0:80]
