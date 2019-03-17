@@ -31,7 +31,8 @@ parser.add_argument('--dropout', type=float, default=0.0,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
-
+parser.add_argument('--hidden', type=int, default=16,
+                    help='num of hidden')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and cuda.is_available()
 
@@ -50,7 +51,7 @@ adj, features, out_feature, test_in_features, test_out_features = load_my_data(
 loss_fuction = torch.nn.BCEWithLogitsLoss()
 # Model and optimizer
 model = MyGCN_v1(nfeat=features.shape[2],
-                 nhid=16,
+                 nhid=args.hidden,
                  nout=out_feature.shape[2],
                  dropout=args.dropout)
 optimizer = optim.Adam(model.parameters(),
