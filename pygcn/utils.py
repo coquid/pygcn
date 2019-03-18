@@ -35,7 +35,10 @@ def load_my_data(path="../my_data/training/", dataset="quad", num_test=20, outpu
     num_feature = 14
     num_out_feature = out_feature_info[output_type]
     in_features = np.empty((0, adj.shape[0], num_feature))
-    out_features = np.empty((0, adj.shape[0], num_out_feature))
+    if(output_type=="unary"):
+        out_features = np.empty((0, num_out_feature))
+    else:
+        out_features = np.empty((0, adj.shape[0], num_out_feature))
     input_ind = 1
     while True:
         try:

@@ -11,7 +11,7 @@ import torch.optim as optim
 import torch.cuda as cuda
 from pygcn.utils import load_my_data, load_save_data, accuracy_optimal
 
-from pygcn.models import MyGCN_v1
+from pygcn.models import FCN
 
 import pickle
 
@@ -21,17 +21,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=150,
+parser.add_argument('--epochs', type=int, default=250,
                     help='Number of epochs to train.')
-parser.add_argument('--lr', type=float, default=0.0007,
+parser.add_argument('--lr', type=float, default=0.0001,
                     help='Initial learning rate.')
-parser.add_argument('--weight_decay', type=float, default=5e-5,
+parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
 parser.add_argument('--dropout', type=float, default=0.0,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--trial', type=int, default=1,
                     help='trial')
-parser.add_argument('--hidden', type=int, default=16,
+parser.add_argument('--hidden', type=int, default=64,
                     help='num of hidden')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and cuda.is_available()
@@ -50,10 +50,12 @@ adj, features, out_feature, test_in_features, test_out_features = load_my_data(
 
 loss_fuction = torch.nn.BCEWithLogitsLoss()
 # Model and optimizer
-model = MyGCN_v1(nfeat=features.shape[2],
+model = FCN(nfeat=features.shape[2],
                  nhid=args.hidden,
-                 nout=out_feature.shape[2],
-                 dropout=args.dropout)
+                 nout=out_feature.shape[1],
+                 dropout=args.dropout,
+                 nVert = features.shape[1]
+                 )
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
 
@@ -71,23 +73,21 @@ def train(epoch):
     num_data = features.shape[0]
     num_vert = features.shape[1]
     model.train()
-
+    acc =0.0
     for ind in range(num_data):
-        vert_permute = np.random.permutation(num_vert)
-        vert_permute = vert_permute[int(num_vert/3):]
         optimizer.zero_grad()
         batch = features[ind]
         batch_out = out_feature[ind]
         output = model(batch, adj)
-        loss_train = loss_fuction(
-            output[vert_permute], batch_out[vert_permute])
+        loss_train = loss_fuction(output, batch_out)
         loss_train.backward()
         optimizer.step()
+        acc += accuracy_optimal(output, batch_out).item()
 
-    acc = accuracy_optimal(output[vert_permute], batch_out[vert_permute])
+    
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.6f}'.format(loss_train.item()),
-          'acc_train: {:.3f}%'.format(acc.item() * 100),
+          'acc_train: {:.3f}%'.format(acc/num_data*100),
           'time: {:.4f}s'.format(time.time() - t))
 
 

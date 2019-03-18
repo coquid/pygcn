@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.cuda as cuda
 from pygcn.utils import load_test_data
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 from pygcn.models import *
 
@@ -79,7 +79,7 @@ def export():
     for i in range(test_in_features.shape[0]):
         output = model(test_in_features[i], adj)
         pred = output >= 0.5
-        arr = output.cpu().detach().numpy()
+        arr = pred.cpu().detach().numpy()
         arr = arr.reshape(1,
                           test_out_features.shape[1] * test_out_features.shape[2])
         test_out = np.append(test_out, arr, axis=0)

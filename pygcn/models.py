@@ -69,28 +69,33 @@ class MyGCN_v1(nn.Module):
 
 
 class FCN(nn.Module):
-    def __init__(self, nfeat, nhid, nout, dropout):
-        super(MyGCN_v1_optimal, self).__init__()
-        self.gc1 = nn.Linear(nfeat, nhid)
-        self.gc2 = nn.Linear(nhid, nhid)
+    def __init__(self, nfeat, nhid, nout, dropout , nVert):
+        super(FCN, self).__init__()
+        self.gcnn1 = GraphConvolution(nfeat,nhid)
+        self.gcnn2 = GraphConvolution(nhid,nhid)
+        self.gcnn3 = GraphConvolution(nhid,1)
+
+        self.gc1 = nn.Linear(nVert, int(nVert/2))
+        self.gc2 = nn.Linear(int(nVert/2), nhid)
         self.gc3 = nn.Linear(nhid, nhid)
-        self.gc4 = nn.Linear(nhid, nhid)
-        self.gc5 = nn.Linear(nhid, nhid)
-        self.gc6 = nn.Linear(nhid, nout)
+        self.gc4 = nn.Linear(nhid, nout)
         self.dropout = dropout
 
     def forward(self, x, adj):
-        x = (self.gc1(x, adj))
+        x = (self.gcnn1(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = (self.gc2(x, adj))
+        x = (self.gcnn2(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = (self.gc3(x, adj))
+        x = (self.gcnn3(x, adj))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc4(x, adj))
+        x = x.view(x.numel())
+        x = F.relu(self.gc1(x))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc5(x, adj))
+        x = F.relu(self.gc2(x))
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.relu(self.gc6(x, adj))
+        x = F.relu(self.gc3(x))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = (self.gc4(x))
        
         return (x)
 

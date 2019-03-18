@@ -1,0 +1,4 @@
+numFrame 160
+seed             : 42
+learning rate    : 0.0004
+dropout          : 0.3
