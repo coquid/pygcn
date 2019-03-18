@@ -70,11 +70,11 @@ def train(epoch):
     t = time.time()
     num_data = features.shape[0]
     num_vert = features.shape[1]
-    vert_permute = np.random.permutation(num_vert)
-    vert_permute = vert_permute[int(num_vert/3):]
     model.train()
 
     for ind in range(num_data):
+        vert_permute = np.random.permutation(num_vert)
+        vert_permute = vert_permute[int(num_vert/3):]
         optimizer.zero_grad()
         batch = features[ind]
         batch_out = out_feature[ind]
